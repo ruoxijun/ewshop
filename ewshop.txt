@@ -1,0 +1,4 @@
+vue create ewshop
+
+Manually select features 手动创建项目
+
