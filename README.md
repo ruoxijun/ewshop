@@ -126,7 +126,7 @@ module.exports = defineConfig({
 
 ```
 
-* 如果你是在 vsCode 中，那么需要配置 **jsconfig.js** 才能准确提示路径：
+* 如果你是在 vsCode 中，那么需要配置 **jsconfig.js** 才能准确**提示路径**：
 
 [vue项目构建之jsconfig.json作用_小渣亮的博客-CSDN博客_jsconfig.js：https://blog.csdn.net/weixin_43845137/article/details/122952997](https://blog.csdn.net/weixin_43845137/article/details/122952997)
 
@@ -183,9 +183,88 @@ import '@assets/css/base.css'; // 添加全局公共样式
 
 #### 4. Axios 简单封装：
 
+1. 在 network/request.js 中：
 
+```javascript
+import axios from 'axios' // 引入 axios
 
+export function request(config) {
+  const instance = axios.create({
+    baseURL: 'https://api.shop.eduwork.cn/',
+    timeout: 5000,
+  });
 
+  // 请求拦截器
+  instance.interceptors.request.use(config=>{
+    // 暂时直接放行
+    return config;
+  }, err=>{
+
+  });
+
+  // 响应拦截器
+  instance.interceptors.response.use(res=>{
+    return res.data || res;
+  }, err=>{
+
+  });
+
+  // 这里相当于返回了 Axios(config)
+  return instance(config);
+}
+```
+
+2. 在 network/home.js 中：
+
+```javascript
+import { request } from "./request"; // 引入
+
+export function getHomeAllData() {
+  return request({
+    url: 'api/index',
+    method: 'GET',
+  });
+}
+```
+
+3. Home.vue 中测试：
+
+```javascript
+import { onMounted } from "vue";
+import { getHomeAllData } from "@network/home";
+export default {
+setup() {
+  onMounted(()=> {
+    getHomeAllData().then(res=> {
+      console.log(res);
+    }).catch(err=> {
+      console.log(err);
+    });
+  });
+},
+}
+```
+
+#### 5. 添加阿里图标库：
+
+[iconfont-阿里巴巴矢量图标库：https://www.iconfont.cn/](https://www.iconfont.cn/)
+
+在阿里巴巴矢量图标库网站中选取自己心仪的图标添加至购物车，最后在购物车中选择 **下载代码**。将解压后的 **iconfont.css** 文件添加到 **src\assets\css\iconfont\ ** 文件夹中。
+
+1. 在 **main.js** 中将 **iconfont.css** 引入项目（也可在 base.css 中引入）：
+
+```javascript
+import '@assets/css/iconfont/iconfont.css'; // 引入阿里图标
+```
+
+2. 使用图标：
+
+在下载解压的文件中 **demo_index.html** 选择 **Font class** 在最下面有使用方法介绍。
+
+```html
+<!-- 标签可以随意，icon-xxx 具体图标类名在图标下方有显示 -->
+<span class="iconfont icon-xxx"></span>
+```
 
 
 
