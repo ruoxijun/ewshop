@@ -266,6 +266,72 @@ import '@assets/css/iconfont/iconfont.css'; // 引入阿里图标
 <span class="iconfont icon-xxx"></span>
 ```
 
+## 项目过程：
+
+### 1. BetterScroll 上拉加载：
+
+* [better-scroll github.com 地址：https://github.com/ustbhuangyi/better-scroll](https://github.com/ustbhuangyi/better-scroll)
+
+1. 安装 BetterScroll：
+
+```
+npm install @better-scroll/core # 核心滚动，大部分情况可能只需要一个简单的滚动
+```
+
+2. 在 Home.vue 中引入 BetterScroll ：
+
+```javascript
+import BetterScroll from 'better-scroll';
+```
+
+3. onMounted 中创建 BetterScroll 实例并实现上拉加载：
+
+```javascript
+// 选项卡内容滚动
+bs = new BetterScroll(wrapper.value, {
+    click: true, // 内容区域点击是否生效
+    pullUpLoad: true, // 开启上拉加载更多
+    probeType: 3, // 触发滚动事件模式 1：懒惰、2：实时、3：敏感
+});
+// 滚动监听
+bs.on('scroll', position=> {});
+// 上拉到底部监听
+bs.on('pullingUp', ()=> {
+    bs.refresh(); // 刷新需要滚动的内容区域高度
+    // 上拉到底部时请求下一页数据
+    getHomeGoods(currentType.value, ++goods.page).then(res=> {
+        let data = res.goods.data;
+        // 防止页数不停自增
+        goods.page = data.length ? res.goods.current_page : --res.goods.current_page;
+        // 新数据拼接到之前的数据当中
+        goods.list.push(...data);
+        // 上拉刷新成功后必须让新数据展示出来并刷新内容区域高度
+        bs.finishPullUp();
+        bs.refresh();
+    }).catch(err=> {
+        console.log(err);
+    });
+});
+```
+
+* html：
+
+```html
+<div ref="wrapper" class="wrapper">
+    <div class="content">
+        ...
+```
+
+#### 关键点：
+
+* 一般 UI 中自带上（下）拉加载（刷新）的组件不建议使用 BetterScroll （**是真的糟心**）。
+* 刚开始使用的 `import BScroll from '@better-scroll/core'` 滚都不能滚，应该是少了啥插件之后换成 `import BetterScroll from 'better-scroll'` 有了一点滚动效果。
+* 之所以不能完全滚动是因为 `.content` 中的内容还没有加载完成（Dom 的加载和图片加载未完成），BetterScroll 把未加载完成的内容高度作为滚动高度，导致能滚动的距离只有一点点甚至没有。
+* 在 `pullingUp` 监听中添加 `bs.refresh()` 来刷新内容区域高度解决滚动不完全和不准确问题（不在 `scroll` 中使用是因为太频繁，且不好用）。
+* 上拉加载新数据后需要 `bs.finishPullUp()` 。
+
+
+
 
 
 
