@@ -330,9 +330,61 @@ bs.on('pullingUp', ()=> {
 * 在 `pullingUp` 监听中添加 `bs.refresh()` 来刷新内容区域高度解决滚动不完全和不准确问题（不在 `scroll` 中使用是因为太频繁，且不好用）。
 * 上拉加载新数据后需要 `bs.finishPullUp()` 。
 
+#### 遇到问题：
 
+* 选项卡 `position: sticky;` 失效，导致选项栏目不能实现吸附到顶部而随内容滚动。
+* 原因： `BetterScroll` 滚动功能给内容元素添加了 `transform` 样式导致 `sticky` 元素形成类似 `absolute` 的效果。
+* 解决方法： 在 BetterScroll 元素外添加同类型选项卡元素定位到吸附位置，添加滚动监听在选项卡滚动到响应位置时显示在 BetterScroll 外的选项卡元素。
 
+### 2. 使用 Vant UI：
 
+#### 1. Vant 官网：
+
+[youzan/vant: Lightweight Mobile UI Components built on Vue (github.com)](https://github.com/youzan/vant)
+
+[Vant 3 - 轻量、可靠的移动端组件库 (gitee.io)](https://vant-contrib.gitee.io/vant/#/zh-CN)
+
+#### 2. 使用：
+
+##### 1. 安装：
+
+```
+npm i vant
+```
+
+##### 2. 按需引入:
+
+* 推荐安装 [unplugin-vue-components](https://github.com/antfu/unplugin-vue-components) 插件，它可以自动按需引入组件
+
+```
+npm i unplugin-vue-components -D
+```
+
+* `vue-cli` 的项目，在 `vue.config.js` 文件中配置插件：
+
+```javascript
+const { VantResolver } = require('unplugin-vue-components/resolvers');
+const ComponentsPlugin = require('unplugin-vue-components/webpack');
+
+module.exports = {
+  configureWebpack: {
+    plugins: [
+      ComponentsPlugin({
+        resolvers: [VantResolver()],
+      }),
+    ],
+  },
+};
+```
+
+* **main.js** 中引入要使用的组件：
+
+```javascript
+// 引入 Vant 录播图 组件
+import { Swipe, SwipeItem } from 'vant';
+// 安装 Vant 轮播图 组件
+createApp(App) .use(Swipe).use(SwipeItem) .mount('#app')
+```
 
 
 

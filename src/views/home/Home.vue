@@ -17,9 +17,7 @@
   <div ref="wrapper" class="wrapper">
     <div class="content">
       <div ref="contentTitle" class="content-title">
-        <div class="banners">
-          <img src="@assets/img/demo.png" alt="临时站位图" />
-        </div>
+        <HomeSwiper :banners="banners"></HomeSwiper>
 
         <recommend-view :recommends="recommends"></recommend-view>
       </div>
@@ -39,11 +37,12 @@
 </template>
 
 <script>
-import RecommendView from "@views/home/ChildComps/RecommendView"
-import NavBar from "@components/common/navbar/NavBar"
-import TabControl from "@components/content/tabControl/TabControl"
-import GoodsList from "@components/content/goods/GoodsList"
-import BackTop from "@components/common/backtop/BackTop"
+import HomeSwiper from "@views/home/ChildComps/HomeSwiper";
+import RecommendView from "@views/home/ChildComps/RecommendView";
+import NavBar from "@components/common/navbar/NavBar";
+import TabControl from "@components/content/tabControl/TabControl";
+import GoodsList from "@components/content/goods/GoodsList";
+import BackTop from "@components/common/backtop/BackTop";
 
 import { ref, reactive, onMounted, watchEffect, nextTick } from "vue";
 import { getHomeAllData, getHomeGoods } from "@network/home";
@@ -53,6 +52,7 @@ export default {
 
 setup() {
 
+  const banners = ref([]);
   // 首页横向推荐书籍
   const recommends = ref([]);
 
@@ -67,6 +67,9 @@ setup() {
   onMounted(()=> {
     // 请求首页所有书籍，挑选推荐数据提供给横向推荐书籍列表使用
     getHomeAllData().then(res=> {
+      // 轮播图数据
+      banners.value = res.slides;
+      // 首页选项卡上方推荐书籍
       const goods = res.goods;
       recommends.value = goods.data;
     }).catch(err=> {
@@ -146,6 +149,7 @@ setup() {
   }
 
   return {
+    banners,
     recommends,
     titles,
     clickItem,
@@ -165,6 +169,7 @@ components: {
   TabControl,
   GoodsList,
   BackTop,
+  HomeSwiper,
 },
 }
 </script>
@@ -184,16 +189,6 @@ components: {
 
     .content {
 
-      .banners {
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-
-        img {
-          width: 100%;
-          height: auto;
-        }
-      }
     }
   }
 }

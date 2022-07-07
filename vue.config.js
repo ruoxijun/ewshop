@@ -1,4 +1,9 @@
-const { defineConfig } = require('@vue/cli-service')
+const { defineConfig } = require('@vue/cli-service');
+
+// Vant 按需引入配置
+const { VantResolver } = require('unplugin-vue-components/resolvers');
+const ComponentsPlugin = require('unplugin-vue-components/webpack');
+
 module.exports = defineConfig({
   transpileDependencies: true,
   configureWebpack: { // webpack 配置
@@ -10,6 +15,14 @@ module.exports = defineConfig({
         '@utils': '@/utils', // @utils = src/utils
         '@views': '@/views', // @views = src/views
       }
-    }
+    },
+    // Vant 按需引入配置
+    plugins: [
+      ComponentsPlugin({
+        resolvers: [VantResolver()],
+      }),
+    ],
   },
-})
+});
+
+
