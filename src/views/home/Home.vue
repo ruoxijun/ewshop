@@ -6,21 +6,36 @@
       <div> 图书商城 </div>
     </template>
   </nav-bar>
+  
+  <tab-control
+    v-show="isTabControlFixed"
+    class="tab-control-fixed"
+    :titles="titles"
+    :activeIndex="activeIndex"
+    @clickItem="clickItem"></tab-control>
 
   <div ref="wrapper" class="wrapper">
     <div class="content">
-      <div class="banners">
-        <img src="@assets/img/demo.png" alt="临时站位图" />
+      <div ref="contentTitle" class="content-title">
+        <div class="banners">
+          <img src="@assets/img/demo.png" alt="临时站位图" />
+        </div>
+
+        <recommend-view :recommends="recommends"></recommend-view>
       </div>
-
-      <recommend-view :recommends="recommends"></recommend-view>
-
-      <tab-control :titles="titles" @clickItem="clickItem"></tab-control>
+      
+      <tab-control
+        v-show="!isTabControlFixed"
+        :titles="titles"
+        :activeIndex="activeIndex"
+        @clickItem="clickItem"></tab-control>
 
       <goods-list :goods="goods"></goods-list>
     </div>
   </div>
-
+  
+  <back-top @clickBackTop="clickBackTop" v-show="isBackTop"></back-top>
+  
 </div>
 </template>
 
@@ -29,6 +44,7 @@ import RecommendView from "@views/home/ChildComps/RecommendView"
 import NavBar from "@components/common/navbar/NavBar"
 import TabControl from "@components/content/tabControl/TabControl"
 import GoodsList from "@components/content/goods/GoodsList"
+import BackTop from "@components/common/backtop/BackTop"
 
 import { ref, reactive, onMounted, watchEffect, nextTick } from "vue";
 import { getHomeAllData, getHomeGoods } from "@network/home";
@@ -44,6 +60,10 @@ setup() {
   // 选项卡上拉加载相关变量
   let bs = null;
   let wrapper = ref(null); // 获取 wrapper 元素
+  const isTabControlFixed = ref(false); // 选项卡位置是否固定
+  const contentTitle = ref(null);
+  const activeIndex = ref(0); // 当前选项卡选中选中的 index
+  const isBackTop = ref(false); // 是否显示 转到顶部按钮
 
   onMounted(()=> {
     // 请求首页所有书籍，挑选推荐数据提供给横向推荐书籍列表使用
@@ -69,7 +89,11 @@ setup() {
       probeType: 3, // 触发滚动事件模式 1：懒惰、2：实时、3：敏感
     });
     // 滚动监听
-    bs.on('scroll', position=> {});
+    bs.on('scroll', position=> {
+      let isBeforPos = (-position.y) > contentTitle.value.offsetHeight;
+      isBackTop.value = isBeforPos;
+      isTabControlFixed.value = isBeforPos;
+    });
     // 上拉到底部监听
     bs.on('pullingUp', ()=> {
       bs.refresh(); // 刷新需要滚动的内容区域高度
@@ -100,14 +124,26 @@ setup() {
   
   // 点击不同类型的选项卡
   const clickItem = index=> {
+    if (activeIndex.value == index) return;
+
+    bs.scrollTo(0, 0, 300);
+    // 改变当前选项卡选中项
+    activeIndex.value = index;
     // 首页不同选项卡书籍列表数据
     currentType.value = titlesMap.value[index];
     getHomeGoods(currentType.value).then(res=> {
       goods.page = res.goods.current_page;
       goods.list = res.goods.data;
+      
+      bs.finishPullUp();
+      bs.refresh();
     }).catch(err=> {
       console.log(err);
     });
+  }
+  
+  const clickBackTop = ()=> {
+    bs.scrollTo(0, 0, 500);
   }
 
   return {
@@ -116,6 +152,11 @@ setup() {
     clickItem,
     goods,
     wrapper, // ref获取元素变量也需要返回
+    isTabControlFixed,
+    contentTitle,
+    activeIndex,
+    isBackTop,
+    clickBackTop,
   }
 },
 
@@ -124,6 +165,7 @@ components: {
   RecommendView,
   TabControl,
   GoodsList,
+  BackTop,
 },
 }
 </script>
