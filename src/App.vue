@@ -1,5 +1,13 @@
 <template>
-  <router-view></router-view>
+<div class="app">
+  <router-view v-slot="{ Component }">
+    <transition name="fade">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </transition>
+  </router-view>
+
   <nav>
     <router-link to="/" class="tab-bar-item">
       <div class="icon"><i class="iconfont icon-shouye-shouye"></i></div>
@@ -18,6 +26,7 @@
       <div>我的</div>
     </router-link>
   </nav>
+</div>
 </template>
 
 <style lang="scss">
@@ -60,5 +69,12 @@ nav {
       display: inline-block;
     }
   }
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .3s
+}
+.fade-enter, .fade-leave-to {
+    opacity: 0
 }
 </style>

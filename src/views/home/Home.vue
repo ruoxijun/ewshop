@@ -25,7 +25,6 @@
       </div>
       
       <tab-control
-        v-show="!isTabControlFixed"
         :titles="titles"
         :activeIndex="activeIndex"
         @clickItem="clickItem"></tab-control>
@@ -119,7 +118,7 @@ setup() {
   const titlesMap = ref(["sales", "recommend", "new"]);
   const goods = reactive({
     page: 0,
-    list: [], 
+    list: [],
   });
   
   // 点击不同类型的选项卡
