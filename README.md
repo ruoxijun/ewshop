@@ -1,6 +1,6 @@
-# ewshop
-
 [![OSCS Status](https://www.oscs1024.com/platform/badge/ruoxijun/ewshop.svg?size=small)](https://www.oscs1024.com/project/ruoxijun/ewshop?ref=badge_small)
+
+# ewshop
 
 ## 运行项目
 
