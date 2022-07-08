@@ -7,7 +7,15 @@ import '@assets/css/base.css'; // 添加全局公共样式
 import '@assets/css/iconfont/iconfont.css'; // 引入阿里图标
 
 // 引入 Vant 组件
-import { Swipe, SwipeItem, Lazyload, Badge, } from 'vant';
+import {
+  Swipe, SwipeItem,
+  Lazyload,
+  Badge,
+  Collapse, CollapseItem,
+  Tab, Tabs,
+  Divider,
+  Sidebar, SidebarItem,
+  } from 'vant';
 
 createApp(App)
 .use(store).use(router)
@@ -21,5 +29,16 @@ createApp(App)
 })
 // 使用 Vant 徽标
 .use(Badge)
+// 使用 Vant 折叠面板
+.use(Collapse)
+.use(CollapseItem)
+// 使用 Vant 标签页
+.use(Tab)
+.use(Tabs)
+// 使用 Vant 分割线
+.use(Divider,{ hairline: false, })
+// 使用 Vant 侧边导航
+.use(Sidebar)
+.use(SidebarItem)
 
 .mount('#app');
