@@ -15,6 +15,7 @@ import {
   Tab, Tabs,
   Divider,
   Sidebar, SidebarItem,
+  Card,
   } from 'vant';
 
 createApp(App)
@@ -40,5 +41,7 @@ createApp(App)
 // 使用 Vant 侧边导航
 .use(Sidebar)
 .use(SidebarItem)
+// 使用 Vant 商品卡片
+.use(Card)
 
 .mount('#app');

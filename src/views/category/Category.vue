@@ -8,33 +8,44 @@
   </nav-bar>
   <div class="category-mainbox">
     <div class="left-menu">
-      <van-collapse v-model="activevanColNames" accordion>
-        <van-collapse-item
-            v-for="(collapse, index) in collapses"
-            :title="collapse.name"
-            :disabled="collapse.children.length < 1"
-            :key="collapse.id"
-            :name="index">
-          <van-sidebar v-model="activeSidebar">
-            <van-sidebar-item
-                v-for="sidebar in collapse.children"
-                :key="sidebar.id"
-                :title="sidebar.name" />
-          </van-sidebar>
-        </van-collapse-item>
-      </van-collapse>
+      <van-sidebar class="left-menu-sidebar" v-model="activeSidebar">
+        <van-collapse v-model="activevanColNames" accordion>
+          <van-collapse-item
+              v-for="(collapse, index) in collapses"
+              :title="collapse.name"
+              :disabled="collapse.children.length < 1"
+              :key="collapse.id"
+              :name="index">
+
+              <van-sidebar-item
+                  v-for="sidebar in collapse.children"
+                  @click = "setSidebarId(sidebar.id)"
+                  :key="sidebar.id"
+                  :title="sidebar.name" />
+          </van-collapse-item>
+        </van-collapse>
+      </van-sidebar>
     </div>
 
     <div class="goods-box">
       <div class="ordertab">
         <van-tabs v-model:active="activeTab">
-          <van-tab title="销量排序"></van-tab>
-          <van-tab title="价格排序"></van-tab>
-          <van-tab title="评论排序"></van-tab>
+          <van-tab v-for="typeArr in ordertab" :title="typeArr[0]"></van-tab>
         </van-tabs>
         <hr />
       </div>
-      <div class="goods-list"> {{activeTab}} - {{activevanColNames}} - {{activeSidebar}} </div>
+      <div class="goods-list">
+        <van-card
+            v-for="good in goods.list"
+            :key="good.id"
+            :num="good.comments_count"
+            :tag="good.collects_count>0? '流行':'标签'"
+            :price="good.price"
+            :desc="`${good.updated_at}`"
+            :title="good.title"
+            :thumb="good.cover_url"
+        />
+      </div>
     </div>
   </div>
 </div>
@@ -43,36 +54,78 @@
 <script>
 import NavBar from "@components/common/navbar/NavBar";
 
-import { getCategory } from "@network/category.js";
+import { getCategory, getCategoryGoods } from "@network/category.js";
 
-import { ref, onMounted } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 
 export default {
 
 setup() {
-  
+
+  // 侧边导航选中下标
+  const activeSidebar = ref(0);
+  // 侧边栏折叠面板展开的选项
+  const activevanColNames = ref(0);
+  // 侧边栏数据
   const collapses = ref([]);
-  
+  // 当前侧边栏选中栏目的 id
+  const sidebarId = ref(0);
+
   onMounted(()=> {
     getCategory().then(res=> {
       collapses.value = res.categories;
-      console.log(collapses.value);
+
+      for (let collapsesVal of collapses.value) {
+        for (let item of collapsesVal.children) {
+          sidebarId.value = item.id;
+
+          // 初始化书籍列表
+          getCategoryGoods(1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
+            goods.list = res.goods.data;
+          });
+          return;
+        }
+      }
+
+      console.log(res);
     });
   });
-  
-  // 标签页选中下标
+
+  const setSidebarId = id=> {
+    sidebarId.value !== id?sidebarId.value = id : null;
+  }
+
+  // 排序规则标签页选中下标
   const activeTab = ref(0);
-  
-  // 折叠面板展开的选项
-  const activevanColNames = ref(0);
-  // 侧边导航选中下标
-  const activeSidebar = ref(0);
-  
+  // 排序规则标签页标签名以及对应的请求参数名
+  const ordertab = [
+    ["销量排序", "sales"],
+    ["价格排序", "price"],
+    ["评论排序", "comments_count"],
+  ];
+
+  // 分类页面书籍列表
+  const goods = reactive({
+    page: 1,
+    list: []
+  });
+
+  // 侧边栏选中 id 与排序规则下标监听
+  watch([sidebarId, activeTab],()=> {
+    getCategoryGoods(1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
+      goods.list = res.goods.data;
+    });
+  });
+
   return {
-    activeTab,
+    activeSidebar,
     activevanColNames,
     collapses,
-    activeSidebar,
+    sidebarId,
+    setSidebarId,
+    activeTab,
+    ordertab,
+    goods,
   }
 },
 components: {
@@ -92,25 +145,29 @@ components: {
       display: flex;
       
       .left-menu {
-        flex: 3;
+        flex: 4;
         height: 100%;
         overflow-x: hidden;
         text-align: left;
         padding-top: calc(45px + 24px);
         box-shadow: 0px 0px 6px rgba(0, 0, 0, .12);
+
+        .left-menu-sidebar {
+          width: 100%;
+        }
       }
       
       .goods-box {
         flex: 7;
-        
+        display: flex;
+        flex-direction: column;
         
         .ordertab {
           
           hr {
             height: 2px;
-            margin-bottom: 24px;
             position: relative;
-            top: -1px;
+            top: -2px;
             background-color: #dfdfdf;
             border: none;
             border-radius: 3px;
@@ -118,6 +175,10 @@ components: {
         }
         
         .goods-list {
+          flex-grow: 1;
+          height: 0;
+          overflow-x: hidden;
+          padding-top: 24px;
         }
       }
     }
