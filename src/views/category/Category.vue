@@ -19,7 +19,7 @@
 
               <van-sidebar-item
                   v-for="sidebar in collapse.children"
-                  @click = "setSidebarId(sidebar.id)"
+                  @click="sidOrTabChange(sidebar.id)"
                   :key="sidebar.id"
                   :title="sidebar.name" />
           </van-collapse-item>
@@ -29,22 +29,34 @@
 
     <div class="goods-box">
       <div class="ordertab">
-        <van-tabs v-model:active="activeTab">
-          <van-tab v-for="typeArr in ordertab" :title="typeArr[0]"></van-tab>
+        <van-tabs v-model:active="activeTab" @click-tab="sidOrTabChange()">
+          <van-tab
+            v-for="typeArr in ordertab"
+            :title="typeArr[0]"
+            ></van-tab>
         </van-tabs>
         <hr />
       </div>
       <div class="goods-list">
-        <van-card
+        <van-list
+          :loading="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          :error="error"
+          error-text="请求失败，点击重新加载"
+          @load="onLoadGoodsList"
+        >
+          <van-card
             v-for="good in goods.list"
             :key="good.id"
             :num="good.comments_count"
             :tag="good.collects_count>0? '流行':'标签'"
             :price="good.price"
-            :desc="`${good.updated_at}`"
+            :desc="`${good.updated_at.trim().substr(0,10)}`"
             :title="good.title"
             :thumb="good.cover_url"
-        />
+          />
+        </van-list>
       </div>
     </div>
   </div>
@@ -77,23 +89,17 @@ setup() {
 
       for (let collapsesVal of collapses.value) {
         for (let item of collapsesVal.children) {
-          sidebarId.value = item.id;
-
+          sidebarId.value = item.id; // 记录第一个侧边栏目的 id
           // 初始化书籍列表
           getCategoryGoods(1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
             goods.list = res.goods.data;
+            loading.value = false; // 加载完成
           });
           return;
         }
       }
-
-      console.log(res);
     });
   });
-
-  const setSidebarId = id=> {
-    sidebarId.value !== id?sidebarId.value = id : null;
-  }
 
   // 排序规则标签页选中下标
   const activeTab = ref(0);
@@ -110,22 +116,51 @@ setup() {
     list: []
   });
 
-  // 侧边栏选中 id 与排序规则下标监听
-  watch([sidebarId, activeTab],()=> {
-    getCategoryGoods(1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
-      goods.list = res.goods.data;
+  // 侧边栏目或者选项卡点击改变时
+  const sidOrTabChange = id=> {
+    if(id) sidebarId.value !== id?sidebarId.value = id : null;
+    goods.page = 0;
+    goods.list.splice(0, goods.list.length);
+    finished.value = true;
+    finished.value = false; // 开启下来加载
+    console.log("click", loading.value, finished.value, error.value);
+  }
+  
+  // 上拉加载
+  const loading = ref(false); // 是否上拉加载数据中
+  const finished = ref(false); // 代表所有数据加载完毕 TRUE 将不再触发加载事件
+  const error = ref(false); // 是否出错
+  // 上拉加载事件
+  const onLoadGoodsList = ()=> {
+    console.log(goods.page, sidebarId.value, activeTab.value);
+    loading.value = true; // 加载中
+    if(sidebarId.value==0) return; // 分类页面首次加载数据
+    getCategoryGoods(goods.page+1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
+      if(!(res.goods.data.length > 0)) {
+        loading.value = false; // 加载完成
+        finished.value = true; // 无需在加载
+        return;
+      }
+      goods.page++;
+      goods.list.push(...(res.goods.data));
+      loading.value = false; // 加载完成
+      console.log("change", loading.value, finished.value, error.value);
     });
-  });
+  };
 
   return {
     activeSidebar,
     activevanColNames,
     collapses,
     sidebarId,
-    setSidebarId,
     activeTab,
     ordertab,
     goods,
+    sidOrTabChange,
+    loading,
+    finished,
+    error,
+    onLoadGoodsList,
   }
 },
 components: {
@@ -135,7 +170,7 @@ components: {
 
 </script>
 
-<style lang='scss' scoped>
+<style lang='scss'>
   .category {
     
     .category-mainbox {
@@ -179,6 +214,16 @@ components: {
           height: 0;
           overflow-x: hidden;
           padding-top: 24px;
+          
+          .van-card__title {
+            text-align: left;
+          }
+          
+          .van-card__desc {
+            text-align: left;
+            overflow: unset;
+            white-space: unset;
+          }
         }
       }
     }
