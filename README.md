@@ -347,7 +347,7 @@ bs.on('pullingUp', ()=> {
 
 [Vant 3 - 轻量、可靠的移动端组件库 (gitee.io)](https://vant-contrib.gitee.io/vant/#/zh-CN)
 
-#### 2. 使用：
+#### 2. 基础使用：
 
 ##### 1. 安装：
 
@@ -388,6 +388,101 @@ import { Swipe, SwipeItem } from 'vant';
 // 安装 Vant 轮播图 组件
 createApp(App) .use(Swipe).use(SwipeItem) .mount('#app')
 ```
+
+#### 3. van-list 上拉加载遇坑：
+
+##### 1. van-list 使用方式：
+
+[List 列表 - Vant 3 (gitee.io)：https://vant-contrib.gitee.io/vant/#/zh-CN/list](https://vant-contrib.gitee.io/vant/#/zh-CN/list)
+
+##### 2. van-list 知识点：
+
+###### props:
+
+* loading： 属性表示 list 数据是否在加载中状态，如果为 true 那么 load（上拉加载） 方法将不会被触发。
+* finished： 属性表示 list 所有的数据是否已加载完毕，如果为 true 将会在触发 load 事件。
+
+* immediate-check： 初始化时检查滚动位置，当满足 `offset` 属性时立即执行一次 load 方法。
+
+###### Events：
+
+* load： 当满足 `offset` 属性时且 loading、finished 都为 false 执行上拉加载方法。
+
+###### 组件实例方法：
+
+* check： 检查当前的滚动位置，若已滚动至底部，则会触发 load 事件。
+
+##### 3. 问题：
+
+```javascript
+// 侧边栏目或者选项卡点击改变时
+const sidOrTabChange = id=> {
+    goods.list.splice(0); // 清空数组
+    if(id) sidebarId.value !== id?sidebarId.value = id : null; // 左侧选中栏目的 id
+    goods.page = 0; // 重置页数
+    finished.value = false; // 表示需要加载新数据
+}
+```
+
+###### 问题描述：
+
+在选项卡或者侧边栏被点击后会 **清空** **van-list** 商品列表即数组，当我从一页完整的数据中切换到其它列表中时，van-list 展示空白且不能上拉加载等操作。
+
+###### 探究原因：
+
+当一页数据加载并渲染完成后（列表高度大于容器高度），默认需要我们 **滚动** 到 offset 设置的距离才能执行 load 方法。
+
+而清空数组后 Dom 并没有立即渲染（高度不满足条件）完成导致 `finished.value = false` 没有起到执行 load 的效果，因此我们需要在 Dom 执行 load 或者不使用 load 自行请求一次数据加载列表。
+
+###### 解决办法：
+
+1. 方案 1 使用 nextTick：
+
+关键 html：
+
+```html
+<van-list
+          ref="goodsList"
+          :loading="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          :error="error"
+          error-text="请求失败，点击重新加载"
+          @load="onLoadGoodsList"
+        >
+```
+
+
+
+关键 js：
+
+```javascript
+const sidOrTabChange = id=> {
+    // loading.value = true; // 数据加载中（load 无法执行）
+    finished.value = false; // 表示需要加载新数据
+    goods.list.splice(0); // 清空数组
+    if(id) sidebarId.value !== id?sidebarId.value = id : null; // 左侧选中栏目的 id
+    goods.page = 0; // 重置页数
+
+    /**
+     * 因为我们清空了数组但是此时 Dom 可能还没有更新，如果此时 finished 直接设置为 false
+     * 会导致 onLoadGoodsList 无法执行。
+     * 在数据更新后 nextTick 能在 Dom 渲染完成后自动调用。
+     *
+     * 此外官方还提供了 check（推荐使用） 方法结合 ref 使用来触发 load
+     */
+    nextTick(()=> {
+        goodsList.value.check(); // 触发 load
+        // loading.value = false; // 表示数据已加载完成，load 方法能够执行
+    });
+}
+```
+
+2. 方案 2 在 sidOrTabChange 自行请求一页数据添加到 goods.list。
+
+
+
+
 
 
 

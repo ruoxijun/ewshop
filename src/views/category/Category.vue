@@ -15,13 +15,14 @@
               :title="collapse.name"
               :disabled="collapse.children.length < 1"
               :key="collapse.id"
-              :name="index">
-
+              :name="index"
+          >
               <van-sidebar-item
                   v-for="sidebar in collapse.children"
                   @click="sidOrTabChange(sidebar.id)"
                   :key="sidebar.id"
-                  :title="sidebar.name" />
+                  :title="sidebar.name"
+              />
           </van-collapse-item>
         </van-collapse>
       </van-sidebar>
@@ -33,12 +34,13 @@
           <van-tab
             v-for="typeArr in ordertab"
             :title="typeArr[0]"
-            ></van-tab>
+          ></van-tab>
         </van-tabs>
         <hr />
       </div>
       <div class="goods-list">
         <van-list
+          ref="goodsList"
           :loading="loading"
           :finished="finished"
           finished-text="没有更多了"
@@ -50,7 +52,7 @@
             v-for="good in goods.list"
             :key="good.id"
             :num="good.comments_count"
-            :tag="good.collects_count>0? '流行':'标签'"
+            :tag="good.collects_count>0 ? '流行':'标签'"
             :price="good.price"
             :desc="`${good.updated_at.trim().substr(0,10)}`"
             :title="good.title"
@@ -68,7 +70,7 @@ import NavBar from "@components/common/navbar/NavBar";
 
 import { getCategory, getCategoryGoods } from "@network/category.js";
 
-import { ref, reactive, onMounted, watch } from "vue";
+import { ref, reactive, onMounted, nextTick } from "vue";
 
 export default {
 
@@ -102,7 +104,7 @@ setup() {
   });
 
   // 排序规则标签页选中下标
-  const activeTab = ref(0);
+  const activeTab = ref(1);
   // 排序规则标签页标签名以及对应的请求参数名
   const ordertab = [
     ["销量排序", "sales"],
@@ -116,35 +118,45 @@ setup() {
     list: []
   });
 
+  const goodsList = ref(null); // van-list 组件实例
   // 侧边栏目或者选项卡点击改变时
   const sidOrTabChange = id=> {
-    if(id) sidebarId.value !== id?sidebarId.value = id : null;
-    goods.page = 0;
-    goods.list.splice(0, goods.list.length);
-    finished.value = true;
-    finished.value = false; // 开启下来加载
-    console.log("click", loading.value, finished.value, error.value);
+    // loading.value = true; // 数据加载中（load 无法执行）
+    finished.value = false; // 表示需要加载新数据
+    goods.list.splice(0); // 清空数组
+    if(id) sidebarId.value !== id?sidebarId.value = id : null; // 左侧选中栏目的 id
+    goods.page = 0; // 重置页数
+
+    /**
+     * 因为我们清空了数组但是此时 Dom 可能还没有更新，如果此时 finished 直接设置为 false
+     * 会导致 onLoadGoodsList 无法执行。
+     * 在数据更新后 nextTick 能在 Dom 渲染完成后自动调用。
+     *
+     * 此外官方还提供了 check（推荐使用） 方法结合 ref 使用来触发 load
+     */
+    nextTick(()=> {
+      goodsList.value.check(); // 触发 load
+      // loading.value = false; // 表示数据已加载完成，load 方法能够执行
+    });
   }
   
   // 上拉加载
-  const loading = ref(false); // 是否上拉加载数据中
-  const finished = ref(false); // 代表所有数据加载完毕 TRUE 将不再触发加载事件
+  const loading = ref(false); // 是否在加载数据中
+  const finished = ref(false); // 代表所有数据是否加载完毕 TRUE 将不再触发 load 事件
   const error = ref(false); // 是否出错
   // 上拉加载事件
   const onLoadGoodsList = ()=> {
-    console.log(goods.page, sidebarId.value, activeTab.value);
     loading.value = true; // 加载中
     if(sidebarId.value==0) return; // 分类页面首次加载数据
     getCategoryGoods(goods.page+1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
       if(!(res.goods.data.length > 0)) {
         loading.value = false; // 加载完成
-        finished.value = true; // 无需在加载
+        finished.value = true; // 无需在加载数据（load 无法执行）
         return;
       }
       goods.page++;
       goods.list.push(...(res.goods.data));
       loading.value = false; // 加载完成
-      console.log("change", loading.value, finished.value, error.value);
     });
   };
 
@@ -156,6 +168,7 @@ setup() {
     activeTab,
     ordertab,
     goods,
+    goodsList,
     sidOrTabChange,
     loading,
     finished,
@@ -214,7 +227,7 @@ components: {
           height: 0;
           overflow-x: hidden;
           padding-top: 24px;
-          
+
           .van-card__title {
             text-align: left;
           }
