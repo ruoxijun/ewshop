@@ -331,6 +331,7 @@ bs.on('pullingUp', ()=> {
 * 之所以不能完全滚动是因为 `.content` 中的内容还没有加载完成（Dom 的加载和图片加载未完成），BetterScroll 把未加载完成的内容高度作为滚动高度，导致能滚动的距离只有一点点甚至没有。
 * 在 `pullingUp` 监听中添加 `bs.refresh()` 来刷新内容区域高度解决滚动不完全和不准确问题（不在 `scroll` 中使用是因为太频繁，且不好用）。
 * 上拉加载新数据后需要 `bs.finishPullUp()` 。
+* [建议使用 Vant List 列表：https://vant-contrib.gitee.io/vant/#/zh-CN/list](https://vant-contrib.gitee.io/vant/#/zh-CN/list)
 
 #### 遇到问题：
 
