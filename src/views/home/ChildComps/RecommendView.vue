@@ -1,7 +1,7 @@
 <template>
 <div class="recommend">
   <div class="recommend-item" v-for="item in recommends.slice(0,4)" :key="item.id">
-    <a href="#" @click.prevent="goDetail(item.id)">
+    <a href="#" @click.prevent="toDetail(item.id)">
       <img v-lazy="item.cover_url" alt="item.title" />
       <div>{{ item.title }}</div>
     </a>
@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { useRouter } from "vue-router";
+import detail from '@mixins/detail';
 
 export default {
   name: "RecommendView",
@@ -25,14 +25,12 @@ export default {
   },
 
   setup(props) {
-    const router = useRouter();
 
-    const goDetail = id=> {
-      router.push({path: '/detail', query:{id}});
-    }
+    // 跳转商品详情页面
+    const { toDetail } = detail();
 
     return {
-      goDetail,
+      toDetail,
     }
   }
 }

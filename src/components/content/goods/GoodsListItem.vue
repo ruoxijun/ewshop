@@ -1,5 +1,5 @@
 <template>
-<div class="goods-item">
+<div class="goods-item" @click="toDetail(item.id)">
   <img v-lazy="item.cover_url" :alt="item.title" />
   <div class="goods-info">
     <p>{{item.title}}</p>
@@ -10,17 +10,29 @@
 </template>
 
 <script>
+import detail from '@mixins/detail';
   
-  export default {
-    props: {
-      item: {
-        type: Object,
-        default() {
-          return {};
-        }
+export default {
+  props: {
+    item: {
+      type: Object,
+      default() {
+        return {};
       }
     }
+  },
+
+  setup() {
+
+    // 跳转商品详情页面
+    const { toDetail } = detail();
+
+    return {
+      toDetail,
+    }
+
   }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -23,7 +23,7 @@ const routes = [
       title: '图书分类',
     }
   },{
-    path: '/detail',
+    path: '/detail/:goodsId',
     name: 'Detail',
     meta: {
       title: '图书详情',

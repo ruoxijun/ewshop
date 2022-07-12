@@ -14,6 +14,7 @@ module.exports = defineConfig({
         '@network': '@/network', // @network = src/network
         '@utils': '@/utils', // @utils = src/utils
         '@views': '@/views', // @views = src/views
+        '@mixins': '@/mixins', // @views = src/views
       }
     },
     // Vant 按需引入配置

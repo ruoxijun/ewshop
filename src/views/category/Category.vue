@@ -56,12 +56,14 @@
             <van-card
               v-for="good in goods.list"
               :key="good.id"
+              @click="toDetail(good.id)"
               :num="good.comments_count"
               :tag="good.collects_count>0 ? '流行':'标签'"
               :price="good.price"
               :desc="`${good.updated_at.trim().substr(0,10)}`"
               :title="good.title"
               :thumb="good.cover_url"
+              :lazy-load="true"
             />
           </van-list>
         </van-pull-refresh>
@@ -74,9 +76,10 @@
 <script>
 import NavBar from "@components/common/navbar/NavBar";
 
-import { getCategory, getCategoryGoods } from "@network/category.js";
+import { getCategory, getCategoryGoods } from "@network/category";
 
 import { ref, reactive, onMounted, nextTick } from "vue";
+import detail from '@mixins/detail';
 
 export default {
 
@@ -173,6 +176,9 @@ setup() {
     });
   };
 
+  // 跳转商品详情页面
+  const { toDetail } = detail();
+
   return {
     activeSidebar,
     activevanColNames,
@@ -189,6 +195,7 @@ setup() {
     finished,
     error,
     onLoadGoodsList,
+    toDetail,
   }
 },
 components: {
