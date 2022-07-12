@@ -480,7 +480,20 @@ const sidOrTabChange = id=> {
 
 2. 方案 2 在 sidOrTabChange 自行请求一页数据添加到 goods.list。
 
+#### 4. van-swipe 滑动轮播图导致触发 click：
 
+当我手动滑动 Vant 轮播图时，会触发轮播图里的点击事件。解决方案：
+
+```html
+<!-- stop-propagation 设置为 false 可避免 -->
+<van-swipe class="swipe"
+           :autoplay="3000"
+           indicator-color="white"
+           :stop-propagation="false"
+           >
+```
+
+参考：[vant 滑动轮播时为什么触发了 click 事件 ：https://blog.csdn.net/weixin_42178050/article/details/104846365](https://blog.csdn.net/weixin_42178050/article/details/104846365)
 
 
 
