@@ -39,26 +39,32 @@
         <hr />
       </div>
       <div class="goods-list">
-        <van-list
-          ref="goodsList"
-          :loading="loading"
-          :finished="finished"
-          finished-text="没有更多了"
-          :error="error"
-          error-text="请求失败，点击重新加载"
-          @load="onLoadGoodsList"
+        <van-pull-refresh
+          v-model="refreshLoading"
+          success-text="刷新成功"
+          @refresh="onRefresh"
         >
-          <van-card
-            v-for="good in goods.list"
-            :key="good.id"
-            :num="good.comments_count"
-            :tag="good.collects_count>0 ? '流行':'标签'"
-            :price="good.price"
-            :desc="`${good.updated_at.trim().substr(0,10)}`"
-            :title="good.title"
-            :thumb="good.cover_url"
-          />
-        </van-list>
+          <van-list
+            ref="goodsList"
+            :loading="loading"
+            :finished="finished"
+            finished-text="没有更多了"
+            :error="error"
+            error-text="请求失败，点击重新加载"
+            @load="onLoadGoodsList"
+          >
+            <van-card
+              v-for="good in goods.list"
+              :key="good.id"
+              :num="good.comments_count"
+              :tag="good.collects_count>0 ? '流行':'标签'"
+              :price="good.price"
+              :desc="`${good.updated_at.trim().substr(0,10)}`"
+              :title="good.title"
+              :thumb="good.cover_url"
+            />
+          </van-list>
+        </van-pull-refresh>
       </div>
     </div>
   </div>
@@ -117,11 +123,17 @@ setup() {
     page: 1,
     list: []
   });
+  
+  // 下拉刷新
+  const refreshLoading = ref(false);
+  const onRefresh = ()=> {
+    refreshLoading.value = true; // 下拉刷新进行中
+    sidOrTabChange();
+  }
 
-  const goodsList = ref(null); // van-list 组件实例
   // 侧边栏目或者选项卡点击改变时
   const sidOrTabChange = id=> {
-    // loading.value = true; // 数据加载中（load 无法执行）
+    loading.value = true; // 数据加载中（load 无法执行）
     finished.value = false; // 表示需要加载新数据
     goods.list.splice(0); // 清空数组
     if(id) sidebarId.value !== id?sidebarId.value = id : null; // 左侧选中栏目的 id
@@ -135,12 +147,13 @@ setup() {
      * 此外官方还提供了 check（推荐使用） 方法结合 ref 使用来触发 load
      */
     nextTick(()=> {
-      goodsList.value.check(); // 触发 load
-      // loading.value = false; // 表示数据已加载完成，load 方法能够执行
+      // goodsList.value.check(); // 触发 load
+      loading.value = false; // 表示数据已加载完成，load 方法能够执行
     });
   }
   
   // 上拉加载
+  const goodsList = ref(null); // van-list 组件实例
   const loading = ref(false); // 是否在加载数据中
   const finished = ref(false); // 代表所有数据是否加载完毕 TRUE 将不再触发 load 事件
   const error = ref(false); // 是否出错
@@ -149,14 +162,14 @@ setup() {
     loading.value = true; // 加载中
     if(sidebarId.value==0) return; // 分类页面首次加载数据
     getCategoryGoods(goods.page+1, sidebarId.value, ordertab[activeTab.value][1]).then(res=> {
+      loading.value = false; // 加载完成
+      refreshLoading.value = false; // 下拉刷新完成
       if(!(res.goods.data.length > 0)) {
-        loading.value = false; // 加载完成
         finished.value = true; // 无需在加载数据（load 无法执行）
         return;
       }
       goods.page++;
       goods.list.push(...(res.goods.data));
-      loading.value = false; // 加载完成
     });
   };
 
@@ -169,6 +182,8 @@ setup() {
     ordertab,
     goods,
     goodsList,
+    refreshLoading,
+    onRefresh,
     sidOrTabChange,
     loading,
     finished,
@@ -226,16 +241,23 @@ components: {
           flex-grow: 1;
           height: 0;
           overflow-x: hidden;
-          padding-top: 24px;
-
-          .van-card__title {
-            text-align: left;
-          }
           
-          .van-card__desc {
-            text-align: left;
-            overflow: unset;
-            white-space: unset;
+          .van-pull-refresh {
+            min-height: 100%;
+            
+            .van-list {
+              margin-top: 24px;
+              
+              .van-card__title {
+                text-align: left;
+              }
+              
+              .van-card__desc {
+                text-align: left;
+                overflow: unset;
+                white-space: unset;
+              }
+            }
           }
         }
       }
