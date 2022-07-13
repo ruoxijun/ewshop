@@ -31,6 +31,7 @@ export default {
   right: 15px;
   bottom: calc(50px + 15px);
   background-color: #fff;
+  opacity: .8;
   
   .back-top-img {
     width: 100%;

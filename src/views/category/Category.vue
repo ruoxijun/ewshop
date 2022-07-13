@@ -38,7 +38,7 @@
         </van-tabs>
         <hr />
       </div>
-      <div class="goods-list">
+      <div ref="scrollDiv" @scroll="listScroll($event)" class="goods-list">
         <van-pull-refresh
           v-model="refreshLoading"
           success-text="刷新成功"
@@ -70,11 +70,14 @@
       </div>
     </div>
   </div>
+  
+  <back-top @clickBackTop="clickBackTop" v-show="backTopShow"></back-top>
 </div>
 </template>
 
 <script>
 import NavBar from "@components/common/navbar/NavBar";
+import BackTop from "@components/common/backtop/BackTop";
 
 import { getCategory, getCategoryGoods } from "@network/category";
 
@@ -178,6 +181,34 @@ setup() {
 
   // 跳转商品详情页面
   const { toDetail } = detail();
+  
+  // 书籍列表滚动容器的 Div
+  const scrollDiv = ref(null);
+  // 是否显示回到顶部按钮
+  const backTopShow = ref(false);
+  const listScroll = (e)=> {
+    if(e.target.scrollTop > 350) {
+      backTopShow.value = true;
+      return;
+    }
+    backTopShow.value = false;
+  }
+  // 回到顶部方法
+  const clickBackTop = ()=> {
+    let active = false;
+    if(scrollDiv.value.scrollTop && !active){
+      active = true;
+      let spaced = scrollDiv.value.scrollTop * (10/300);
+      let interval = setInterval(()=> {
+        if(scrollDiv.value.scrollTop && active){
+          scrollDiv.value.scrollBy(0, -spaced);
+        } else {
+          active = false;
+          clearInterval(interval);
+        }
+      },10);
+    }
+  }
 
   return {
     activeSidebar,
@@ -196,10 +227,15 @@ setup() {
     error,
     onLoadGoodsList,
     toDetail,
+    scrollDiv,
+    backTopShow,
+    listScroll,
+    clickBackTop,
   }
 },
 components: {
   NavBar,
+  BackTop,
 },
 }
 
