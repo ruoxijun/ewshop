@@ -16,6 +16,8 @@ import {
   Divider,
   Sidebar, SidebarItem,
   Card,
+  Image as VanImage,
+  Button,
   } from 'vant';
 
 createApp(App)
@@ -43,5 +45,9 @@ createApp(App)
 .use(SidebarItem)
 // 使用 Vant 商品卡片
 .use(Card)
+// 使用 Vant 图片组件
+.use(VanImage)
+// 使用 Vant 按钮组件
+.use(Button)
 
 .mount('#app');

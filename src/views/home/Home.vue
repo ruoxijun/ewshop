@@ -27,7 +27,7 @@
         :activeIndex="activeIndex"
         @clickItem="clickItem"></tab-control>
 
-      <goods-list :goods="goods"></goods-list>
+      <goods-list :goods="goods.list"></goods-list>
     </div>
   </div>
   

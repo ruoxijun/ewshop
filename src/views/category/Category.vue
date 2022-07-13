@@ -71,7 +71,7 @@
     </div>
   </div>
   
-  <back-top @clickBackTop="clickBackTop" v-show="backTopShow"></back-top>
+  <back-top @clickBackTop="clickBackTop" v-show="backTopShow" :scrollDiv="scrollDiv"></back-top>
 </div>
 </template>
 
