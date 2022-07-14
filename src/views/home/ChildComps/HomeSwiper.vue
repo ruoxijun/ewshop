@@ -52,6 +52,7 @@ export default {
       .swipe-item-img {
         width: 100%;
         height: 160px;
+        object-fit: cover;
       }
     }
   }

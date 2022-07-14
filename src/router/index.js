@@ -65,6 +65,7 @@ const routes = [
     meta: {
       title: "个人中心",
     },
+    redirect: '/register',
   },
 ]
 

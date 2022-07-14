@@ -6,45 +6,62 @@
     </template>
   </nav-bar>
   <div class="context">
-    <van-form @failed="onFailed">
+    <van-image
+        round
+        lazy-load
+        fit="cover"
+        width="10rem"
+        height="10rem"
+        src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
+    >
+      <template v-slot:loading>
+        <van-loading type="spinner" size="20" />
+      </template>
+    </van-image>
+
+    <van-form @submit="onSubmit">
       <van-cell-group inset>
-        <!-- 通过 pattern 进行正则校验 -->
         <van-field
-          v-model="data.name"
+          v-model="name"
           name="name"
-          label="昵称"
-          placeholder="请输入昵称"
-          :rules="[{ pattern, message: '请输入正确内容' }]"
+          label="用户名"
+          placeholder="请输入用户名"
+          type="text"
+          :rules="[{ required: true, message: '请输入用户名' }]"
         />
-        <!-- 通过 validator 进行函数校验 -->
         <van-field
-          v-model="data.email"
+          v-model="email"
           name="email"
           label="邮箱"
           placeholder="请输入邮箱"
-          :rules="[{ validator, message: '请输入正确内容' }]"
+          type="email"
+          :rules="[{ required: true, message: '请输入邮箱' }]"
         />
-        <!-- 通过 validator 返回错误提示 -->
         <van-field
-          v-model="data.password"
+          v-model="password"
           name="password"
           label="密码"
           placeholder="请输入密码"
-          :rules="[{ validator: validatorMessage }]"
+          type="password"
+          :rules="[{ required: true, message: '请输入密码' }]"
         />
-        <!-- 通过 validator 进行异步函数校验 -->
         <van-field
-          v-model="data.password_confirmation"
+          v-model="password_confirmation"
           name="password_confirmation"
           label="确认密码"
           placeholder="请确认密码"
-          :rules="[{ validator: asyncValidator, message: '请输入正确内容' }]"
+          type="password"
+          :rules="[{ required: true, message: '请确认密码' }]"
         />
       </van-cell-group>
       <div style="margin: 16px;">
-        <van-button round block type="primary" native-type="submit">
+        <van-button block round type="success" native-type="submit">
           注册
         </van-button>
+        <router-link
+            class="login-text"
+            :to="{path: '/login', replace: true}"
+        > 已有账号，立即登录 > </router-link>
       </div>
     </van-form>
   </div>
@@ -55,57 +72,55 @@
 
 import NavBar from '@components/common/navbar/NavBar.vue'
 
-import { Toast } from 'vant';
-import { ref, reactive } from 'vue';
+// Notify
+import { Notify, Toast } from 'vant';
+
+import { register } from '@network/user'
+import {ref, reactive, toRefs} from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
   
   setup() {
-    
+
+    const router = useRouter();
+
     // 注册表单数据原型
     const data = reactive({
       name: '',
-      email: '',
+      email: '@qq.com',
       password: '',
       password_confirmation: '',
     });
-    const value1 = ref('');
-    const value2 = ref('');
-    const value3 = ref('abc');
-    const value4 = ref('');
-    const pattern = /\d{6}/;
 
-    // 校验函数返回 true 表示校验通过，false 表示不通过
-    const validator = (val) => /1\d{10}/.test(val);
+    const onSubmit = () => {
+      if (data.password !== data.password_confirmation) {
+        Notify("两次输入密码不一致!!!" );
+        return;
+      }
 
-    // 校验函数可以直接返回一段错误提示
-    const validatorMessage = (val) => `${val} 不合法，请重新输入`;
-
-    // 校验函数可以返回 Promise，实现异步校验
-    const asyncValidator = (val) =>
-      new Promise((resolve) => {
-        Toast.loading('验证中...');
-
-        setTimeout(() => {
-          Toast.clear();
-          resolve(val === '1234');
-        }, 1000);
+      Toast.loading({
+        message: '注册中...',
+        forbidClick: true,
       });
+      register(data).then((res)=> {
+        if(res && res.status=='201') {
+          Toast.clear();
+          data.password = '';
+          data.password_confirmation = '';
 
-    const onFailed = (errorInfo) => {
-      console.log('failed', errorInfo);
+          Toast.success('注册成功');
+
+          setTimeout(()=> {
+            router.replace("/login");
+          }, 300);
+        }
+      });
     };
 
     return {
-      data,
-      value1,
-      value2,
-      value3,
-      value4,
-      pattern,
-      onFailed,
-      validator,
-      asyncValidator,
+      ...toRefs(data),
+      onSubmit,
     };
   },
   
@@ -120,8 +135,21 @@ export default {
 .register {
 
   .context {
-    margin-top: 45px;
-    margin-bottom: 50px;
+    height: 100vh;
+    padding-bottom: 50px;
+    padding-top: 15px + 45px;
+
+    .van-form {
+      margin: 3vh 4vw 0;
+
+      .login-text {
+        color: #42b983;
+        font-size: 14px;
+        margin-top: 15px;
+        text-align: right;
+        float: right;
+      }
+    }
     
   }
 }

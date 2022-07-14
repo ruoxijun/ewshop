@@ -6,6 +6,10 @@ import store from './store'
 import '@assets/css/base.css'; // 添加全局公共样式
 import '@assets/css/iconfont/iconfont.css'; // 引入阿里图标
 
+import 'vant/es/notify/style'; // vant notify 样式
+import 'vant/es/toast/style';
+
+
 // 引入 Vant 组件
 import {
   Swipe, SwipeItem,
@@ -18,7 +22,7 @@ import {
   Card,
   Image as VanImage,
   Button,
-  Form, Field, CellGroup
+  Form, Field, CellGroup,
   } from 'vant';
 
 createApp(App)

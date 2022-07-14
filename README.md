@@ -495,11 +495,54 @@ const sidOrTabChange = id=> {
 
 参考：[vant 滑动轮播时为什么触发了 click 事件 ：https://blog.csdn.net/weixin_42178050/article/details/104846365](https://blog.csdn.net/weixin_42178050/article/details/104846365)
 
+#### 5. Notify 消息通知样式失效：
 
+##### 1. 使用 Notify 消息通知时样式失效，官方文档 Notify 章节中表示直接引入 Notify 即可直接使用。如下：
 
+```javascript
+import { Notify } from 'vant';
 
+Notify('通知内容');
+```
 
+效果图：
 
+![](README-imgs/4.Notify样式未引用.png)
+
+##### 2. 问题排查：
+
+对比官方样式效果图：
+
+![](README-imgs/5.Notify官方效果.png)
+
+比较官方可以看得出我缺少了 **`.van-notify`** 等样式，证明 Notify 的样式没有被我们引入。
+
+##### 3. 解决方案：
+
+在官方的快速上手文档中提到：
+
+* Vant 中有个别组件是以函数的形式提供的，包括 `Toast`，`Dialog`，`Notify` 和 `ImagePreview` 组件。在使用函数组件时，`unplugin-vue-components` 无法自动引入对应的样式，因此需要手动引入样式。
+
+[快速上手 - Vant 3 (gitee.io) https://vant-contrib.gitee.io/vant/#/zh-CN/quickstart#4.-yin-ru-han-shu-zu-jian-de-yang-shi](https://vant-contrib.gitee.io/vant/#/zh-CN/quickstart#4.-yin-ru-han-shu-zu-jian-de-yang-shi)
+
+```javascript
+// Notify
+import { Notify } from 'vant';
+import 'vant/es/notify/style';
+```
+
+因为很多地方要用到 Notify 我将 `import 'vant/es/notify/style';` 放在了 **main.js** 。
+
+#### 6. Object.keys(obj)：
+
+```
+obj= {
+    name: 'haha',
+    age: 18,
+}
+// 将对象的所有属性 key 组成数组返回
+Object.keys(obj); // ['name', 'age']
+```
 
 
 

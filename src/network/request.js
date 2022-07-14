@@ -1,4 +1,5 @@
-import axios from 'axios' // 引入 axios
+import axios from 'axios'; // 引入 axios
+import { Notify } from 'vant';
 
 export function request(config) {
   const instance = axios.create({
@@ -18,7 +19,13 @@ export function request(config) {
   instance.interceptors.response.use(res=>{
     return res.data || res;
   }, err=>{
-
+    if ((err.request.responseURL.lastIndexOf('api/auth/login')>0)
+        && err.response.status == 401){
+      Notify("用户名或密码错误");
+      return Promise.reject("用户名或密码错误");
+    }
+    const errors = err.response.data.errors;
+    Notify(errors[Object.keys(errors)[0]][0]);
   });
 
   // 这里相当于返回了 Axios(config)
