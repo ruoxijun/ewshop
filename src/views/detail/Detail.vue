@@ -33,17 +33,13 @@
     
     <van-tabs v-model:active="active" scrollspy sticky offset-top="45px">
       <van-tab v-for="(tabTitle, index) in detailTabs" :title="tabTitle">
-        <van-image
-          v-if="index == 0"
-          v-for="imgUrl in detail.pics_url"
-          width="100vw"
-          fit="cover"
-          lazy-load
-          :src="imgUrl"
-        />
+        <div class="details"
+             v-if="index == 0"
+             v-html="detail.details"
+        ></div>
         
         <!-- 热评暂时略过 -->
-        <div v-if="index==1">
+        <div v-if="index == 1">
           {{detail.comments}}
         </div>
         
@@ -109,13 +105,24 @@ export default {
 
 <style lang='scss'>
 .detail {
-  height: 100vh;
-  margin-top: 45px;
-  margin-bottom: 50px;
+  position: fixed;
+  top: 45px;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  overflow-x: hidden;
   
   .content {
+
     .van-card__content {
       text-align: left;
+    }
+
+    .details{
+      img {
+        width: 100vw;
+        height: auto;
+      }
     }
     
   }
