@@ -18,6 +18,7 @@ import {
   Card,
   Image as VanImage,
   Button,
+  Form, Field, CellGroup
   } from 'vant';
 
 createApp(App)
@@ -49,5 +50,9 @@ createApp(App)
 .use(VanImage)
 // 使用 Vant 按钮组件
 .use(Button)
+// 使用 Vant 表单组件
+.use(Form)
+.use(Field)
+.use(CellGroup)
 
 .mount('#app');
