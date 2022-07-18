@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import store from '@/store';
+
 const Home = () => import('@views/home/Home.vue');
 const Category = () => import('@views/category/Category.vue'); // 分类
 const Detail = () => import('@views/detail/Detail.vue'); // 图书详情
@@ -65,7 +67,11 @@ const routes = [
     meta: {
       title: "个人中心",
     },
-    redirect: '/register',
+    beforeEnter: (to, from)=> {
+      if(!store.state.isLogin) {
+        return '/login';
+      }
+    },
   },
 ]
 

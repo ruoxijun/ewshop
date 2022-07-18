@@ -9,7 +9,18 @@ export function request(config) {
 
   // 请求拦截器
   instance.interceptors.request.use(config=>{
-    // 暂时直接放行
+    const wls = window.localStorage;
+    if (!wls) {
+      Notify("你的浏览器版本较低，请升级后重试");
+      return;
+    }
+    // 请求授权信息
+    const token = wls.getItem("token");
+    const tokenType = wls.getItem("tokenType");
+    if (token && tokenType) {
+      config.headers.Authorization = `${tokenType} ${token}`;
+      console.log(config.headers.Authorization);
+    }
     return config;
   }, err=>{
 

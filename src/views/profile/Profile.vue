@@ -6,7 +6,10 @@
       <div> 个人中心 </div>
     </template>
   </nav-bar>
-  <h1>Profile 个人中心</h1>
+
+  <div class="content">
+    <van-button round type="warning" block> 退出登录 </van-button>
+  </div>
 </div>
 </template>
 
@@ -14,13 +17,25 @@
 import NavBar from "@components/common/navbar/NavBar";
 
 export default {
-components: {
-  NavBar,
-},
+
+  setup() {
+
+  },
+
+  components: {
+    NavBar,
+  },
 }
 
 </script>
 
-<style lang='less' scoped>
+<style lang='scss' scoped>
+.profile {
+  padding: 45px 0 50px;
 
+  .content {
+
+  }
+
+}
 </style>
