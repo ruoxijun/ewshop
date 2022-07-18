@@ -1,3 +1,5 @@
-export default {
+const actions = {
 
 }
+
+export default actions;

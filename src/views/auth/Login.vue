@@ -61,12 +61,14 @@ import { login } from '@network/user';
 import { Notify, Toast } from 'vant';
 import { reactive, toRefs } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex"
 
 export default {
 
   setup(){
 
     const router = useRouter();
+    const store = useStore();
 
     // 注册表单数据原型
     const data = reactive({
@@ -80,16 +82,18 @@ export default {
           Notify("浏览器版本较低请升级后重试");
         }
 
+        // 保存登录状态
         data.email = '';
         data.password = '';
         window.localStorage.setItem("token", res.access_token);
         window.localStorage.setItem("tokenType", res.token_type);
+        store.commit("setIsLogin", true);
 
         Toast.success("登录成功");
         setTimeout(()=> {
           router.go(-1);
         },300);
-      })
+      });
     };
 
     return {

@@ -4,7 +4,9 @@ import mutations from "./mutations";
 import actions from './actions';
 
 const state = {
-  isLogin: false,
+  user: {
+    isLogin: window.localStorage.getItem("token") ? true : false,
+  }
 }
 
 export default createStore({

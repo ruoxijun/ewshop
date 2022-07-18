@@ -58,6 +58,7 @@ const routes = [
     component: ShopCart,
     meta: {
       title: "购物车",
+      isAuthRequired: true,
     },
   },
   {
@@ -66,11 +67,7 @@ const routes = [
     component: Profile,
     meta: {
       title: "个人中心",
-    },
-    beforeEnter: (to, from)=> {
-      if(!store.state.isLogin) {
-        return '/login';
-      }
+      isAuthRequired: true, // 需要检查是否已登录
     },
   },
 ]
@@ -82,6 +79,10 @@ const router = createRouter({
 
 router.beforeEach((to, from)=>{
   document.title = to.meta.title;
+  console.log(store.state.user.isLogin);
+  if(to.meta.isAuthRequired && !store.state.user.isLogin) {
+    return "/login";
+  }
 });
 
 export default router
