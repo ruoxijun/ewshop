@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import store from '@/store';
+import { Notify } from 'vant';
 
 const Home = () => import('@views/home/Home.vue');
 const Category = () => import('@views/category/Category.vue'); // 分类
@@ -79,8 +80,8 @@ const router = createRouter({
 
 router.beforeEach((to, from)=>{
   document.title = to.meta.title;
-  console.log(store.state.user.isLogin);
   if(to.meta.isAuthRequired && !store.state.user.isLogin) {
+    Notify("请登录后重试");
     return "/login";
   }
 });

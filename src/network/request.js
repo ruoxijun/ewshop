@@ -1,5 +1,6 @@
 import axios from 'axios'; // 引入 axios
-import { Notify } from 'vant';
+import { Notify, Toast } from 'vant';
+import router from '@/router'
 
 export function request(config) {
   const instance = axios.create({
@@ -19,7 +20,6 @@ export function request(config) {
     const tokenType = wls.getItem("tokenType");
     if (token && tokenType) {
       config.headers.Authorization = `${tokenType} ${token}`;
-      console.log(config.headers.Authorization);
     }
     return config;
   }, err=>{
@@ -34,6 +34,10 @@ export function request(config) {
         && err.response.status == 401){
       Notify("用户名或密码错误");
       return Promise.reject("用户名或密码错误");
+    } else if (err.response.status == 401){
+      // 未授权
+      Toast.fail("请登录");
+      router.push("/login");
     }
     const errors = err.response.data.errors;
     Notify(errors[Object.keys(errors)[0]][0]);

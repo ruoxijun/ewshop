@@ -17,21 +17,31 @@
 import NavBar from "@components/common/navbar/NavBar";
 
 import { logout } from "@network/user";
+import {useRouter} from "vue-router";
 import { useStore } from "vuex";
+import { Toast } from 'vant'
 
 export default {
 
   setup() {
-    
+
+    const router = useRouter();
     const store = useStore();
-    
+
+    // 点击退出登录
     const clickLogout = ()=> {
       logout().then(res=> {
-        console.log(res);
         if(res.status == 204) {
+          // 清除登录状态
           window.localStorage.removeItem("token");
           window.localStorage.removeItem("tokenType");
+
           store.commit("setIsLogin", false);
+
+          Toast.success("退出成功");
+          setTimeout(()=> {
+            router.replace("/login");
+          }, 300);
         }
       });
     }

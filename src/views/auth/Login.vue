@@ -85,8 +85,10 @@ export default {
         // 保存登录状态
         data.email = '';
         data.password = '';
+
         window.localStorage.setItem("token", res.access_token);
         window.localStorage.setItem("tokenType", res.token_type);
+
         store.commit("setIsLogin", true);
 
         Toast.success("登录成功");
