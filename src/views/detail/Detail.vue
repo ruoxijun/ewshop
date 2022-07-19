@@ -3,7 +3,7 @@
   <nav-bar>
     <template v-slot:left></template>
     <template v-slot:default>
-      <div> 图书详情 - {{goodsId}} </div>
+      <div> 图书详情 </div>
     </template>
   </nav-bar>
   
@@ -26,12 +26,12 @@
         <van-tag v-if="detail.is_recommend==1" plain type="danger">推荐</van-tag>
       </template>
       <template #footer>
-        <van-button type="warning">加入购物车</van-button>
-        <van-button type="danger">立即购买</van-button>
+        <van-button type="warning" @click="handlerAddCart">加入购物车</van-button>
+        <van-button type="danger" @click="buyNow">立即购买</van-button>
       </template>
     </van-card>
     
-    <van-tabs v-model:active="active" scrollspy sticky offset-top="45px">
+    <van-tabs scrollspy sticky offset-top="45px">
       <van-tab v-for="(tabTitle, index) in detailTabs" :title="tabTitle">
         <div class="details"
              v-if="index == 0"
@@ -61,14 +61,19 @@ import NavBar from "@components/common/navbar/NavBar";
 import GoodsList from "@components/content/goods/GoodsList";
 
 import { ref, reactive, toRefs, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
 import { getDetail } from '@network/detail';
+import { addCart, getCarts } from '@network/cart';
+import { Toast } from "vant";
 
 export default {
   name: "Detail",
 
   setup() {
     const route = useRoute(); // 获取 route（当前路由对象）
+    const router = useRouter();
+    const store = useStore();
 
     const goodsId = ref(null);// 获取书籍商品 id
     goodsId.value = route.params.goodsId;
@@ -85,12 +90,33 @@ export default {
         book.likeGoods = res.like_goods;
       });
     });
-    
+
+    // 添加到购物车
+    const handlerAddCart = ()=> {
+      addCart(goodsId.value).then(res=> {
+        if(res.status==201 || res.status==204) {
+          Toast.success("已添加");
+          store.dispatch("setCartCount");
+        }
+      });
+    }
+    // 立即购买
+    const buyNow = ()=> {
+      addCart(goodsId.value).then(res=> {
+        if(res.status==201 || res.status==204) {
+          router.push("/shopcart");
+          store.dispatch("setCartCount");
+        }
+      });
+    }
+
     const detailTabs = reactive(["概述", "热评", "相关图书"]);
 
     return {
       goodsId,
       ...toRefs(book),
+      handlerAddCart,
+      buyNow,
       detailTabs,
     }
   },
@@ -116,6 +142,24 @@ export default {
 
     .van-card__content {
       text-align: left;
+
+      .van-card__title {
+        font-size: 16px;
+      }
+      .van-card__desc{
+        font-size: var(--font-size);
+        margin-top: 10px;
+      }
+      .van-card__bottom {
+        .van-card__price {
+          color: red;
+          font-weight: bold;
+          font-size: 16px;
+        }
+        .van-card__num {
+          font-size: var(--font-size);
+        }
+      }
     }
 
     .details{

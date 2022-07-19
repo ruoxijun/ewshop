@@ -19,7 +19,7 @@
     </router-link>
     <router-link to="/shopcart" class="tab-bar-item">
       <div class="icon">
-        <van-badge :content="9" max="99">
+        <van-badge :content="$store.state.carts.count?$store.state.carts.count:null" max="99">
           <i class="iconfont icon-gouwuche"></i>
         </van-badge>
       </div>
@@ -32,6 +32,23 @@
   </nav>
 </div>
 </template>
+
+<script>
+import { useStore } from 'vuex';
+
+export default {
+  setup() {
+
+    const store = useStore();
+
+    // 购物车数量
+    store.dispatch("setCartCount");
+
+    return {
+    }
+  }
+}
+</script>
 
 <style lang="scss">
 #app {

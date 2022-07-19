@@ -26,6 +26,8 @@ import {
   SubmitBar,
   Checkbox, CheckboxGroup,
   Stepper,
+  SwipeCell,
+  Empty,
   } from 'vant';
 
 createApp(App)
@@ -68,5 +70,9 @@ createApp(App)
 .use(CheckboxGroup)
 // 使用 Vant 步进器
 .use(Stepper)
+// 使用 Vant 滑动单元格
+.use(SwipeCell)
+// 使用 Vant 空状态
+.use(Empty)
 
 .mount('#app');

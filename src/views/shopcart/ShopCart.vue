@@ -3,32 +3,57 @@
   <nav-bar>
     <template v-slot:left></template>
     <template v-slot:default>
-      <div> 购物车 </div>
+      <div> 购物车 (<span> {{$store.state.carts.count}} </span>) </div>
     </template>
   </nav-bar>
   <div class="content">
     <div class="carts-list">
-      <div class="cart-item" v-for="i in 50">
-        <van-checkbox></van-checkbox>
-        <van-card
-          price="2.00"
-          thumb="https://fastly.jsdelivr.net/npm/@vant/assets/ipad.jpeg"
+      <van-checkbox-group v-model="result" @change="groupChange" ref="checkboxGroup">
+        <van-swipe-cell v-for="cart in list" :key="cart.id">
+          <div class="cart-item">
+            <van-checkbox :name="cart.id"></van-checkbox>
+            <van-card
+                :price="cart.goods.price.toFixed(2)"
+                :thumb="cart.goods.cover_url"
+                @click-thumb="toDetail(cart.goods.id)"
+            >
+              <template #title>
+                <div class="cart-title">
+                  <span>{{ cart.goods.title }}</span>
+                  <span>× {{ cart.goods.stock }}</span>
+                </div>
+              </template>
+              <template #num>
+                <van-stepper
+                    v-model="cart.num"
+                    :name="cart.id"
+                    @change="cartNumChange"
+                    min="1" :max="cart.goods.stock"
+                    integer theme="round"
+                />
+              </template>
+            </van-card>
+          </div>
+          <template #right>
+            <van-button square text="删除" type="danger" class="delete-button" />
+          </template>
+        </van-swipe-cell>
+      </van-checkbox-group>
+
+      <div class="empty" v-if="list.length < 1">
+        <van-empty
+            image="https://fastly.jsdelivr.net/npm/@vant/assets/custom-empty-image.png"
+            image-size="80"
+            description="购物车空空如也"
         >
-          <template #title>
-            <div class="cart-title">              
-              <span>商品标题</span>
-              <span>×18</span>
-            </div>
-          </template>
-          <template #num>
-            <van-stepper v-model="value" min="1" max="99" integer />
-          </template>
-        </van-card>
+          <van-button round type="primary" @click="$router.push('/')"> 前往选购 </van-button>
+        </van-empty>
       </div>
     </div>
+
     <div class="carts-submit-bar">
       <van-submit-bar :price="3050" button-text="提交订单" @submit="onSubmit">
-        <van-checkbox v-model="checkedAll">全选</van-checkbox>
+        <van-checkbox @click="clickCheckAll" v-model="checkedAll">全选</van-checkbox>
       </van-submit-bar>
     </div>
   </div>
@@ -38,21 +63,97 @@
 <script>
 import NavBar from "@components/common/navbar/NavBar";
 
-import { ref } from 'vue';
+import { nextTick, reactive, ref, toRefs, onMounted } from 'vue';
+import { getCarts, modifyCart, checkedCart } from '@network/cart';
+import { Toast } from 'vant';
+
+import detail from '@mixins/detail';
 
 export default {
-  
+
   setup() {
-    
+
+    // 到商品详情页面
+    const { toDetail } = detail();
+
+    // 购物车列表
+    const carts = reactive({
+      list: [],
+      result: [], // 选中的商品
+    });
+    const init = ()=> {
+      Toast.loading({
+        message: '加载中...',
+        duration: 0,
+        forbidClick: true,
+      });
+      getCarts("goods").then(res=> {
+        console.log(res.data);
+        carts.list = res.data;
+        carts.result = res.data.filter(c=> c.is_checked === 1 ).map(c=> c.id);
+        checkedAll.value = carts.list.length===carts.result.length;
+
+        nextTick(()=> {
+          Toast.clear();
+        });
+      });
+    }
+    onMounted(()=> {
+      init();
+    });
+
+    // 购物车数量商品数量改变时
+    const cartNumChange = (value, detail)=> {
+      Toast.loading({
+        message: '修改中...',
+        duration: 0,
+        forbidClick: true,
+      });
+
+      const cartId = detail.name;
+      modifyCart(cartId, value).then(res=> {
+        if (res.status = 204) {
+          Toast.clear();
+        }
+      });
+    }
+
+    // 商品复选框组改变时
+    const groupChange = result=> {
+      Toast.loading({
+        message: '选择中...',
+        duration: 0,
+        forbidClick: true,
+      });
+
+      checkedCart(carts.result).then(res=> {
+        if(res.status == 204){
+          checkedAll.value = carts.list.length===carts.result.length;
+          Toast.clear();
+        }
+      });
+    }
+    // 是否全选
     const checkedAll = ref(false);
+    const checkboxGroup = ref(null);
+    const clickCheckAll = e=> {
+      checkboxGroup.value.toggleAll(checkedAll.value);
+    }
+    // 提交订单
     const onSubmit = ()=> {};
-    
+
     return {
+      toDetail,
+      ...toRefs(carts),
+      cartNumChange,
+      groupChange,
       checkedAll,
+      checkboxGroup,
+      clickCheckAll,
       onSubmit,
     }
   },
-  
+
   components: {
     NavBar
   },
@@ -76,51 +177,57 @@ export default {
       padding-top: 8px;
       flex-grow: 1;
       overflow-x: hidden;
-      
-      .cart-item {
-        margin: 0 6px 8px;
-        border-radius: 8px;
-        background-color: #fff;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        
-        .van-checkbox {
-          margin-left: 8px;
-        }
-        
-        .van-card {
-          flex-grow: 1;
-          background-color: #fff;
-          
-          .van-card__content {
-            padding: 5px;
 
-            .cart-title {
-              font-size: 16px;
-              display: flex;
-              justify-content: space-between;
-            }
-            .van-card__bottom {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              
-              .van-card__price {
-                color: red;
-                font-size: 18px;
-                font-weight: bold;
-                
-                .van-card__price-integer {
-                  margin: 0 2px;
-                  font-size: 20px;
-                }
+      .van-swipe-cell {
+        .cart-item {
+          margin: 0 6px 8px;
+          border-radius: 8px;
+          background-color: #fff;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+
+          .van-checkbox {
+            margin-left: 8px;
+          }
+
+          .van-card {
+            flex-grow: 1;
+            background-color: #fff;
+
+            .van-card__content {
+              padding: 5px;
+
+              .cart-title {
+                font-size: 16px;
+                display: flex;
+                justify-content: space-between;
               }
-              .van-card__num {
-                float: unset;
+              .van-card__bottom {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                .van-card__price {
+                  color: red;
+                  font-size: 18px;
+                  font-weight: bold;
+
+                  .van-card__price-integer {
+                    margin: 0 2px;
+                    font-size: 20px;
+                  }
+                }
+                .van-card__num {
+                  float: unset;
+                }
               }
             }
           }
+        }
+
+        .van-button {
+          height: 100%;
         }
       }
     }

@@ -6,6 +6,9 @@ import actions from './actions';
 const state = {
   user: {
     isLogin: window.localStorage.getItem("token") ? true : false,
+  },
+  carts: {
+    count: 0,
   }
 }
 

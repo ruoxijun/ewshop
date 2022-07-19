@@ -13,10 +13,13 @@ export function addCart(goodsId, num) {
 }
 
 // 购物车列表
-export function getCarts() {
+export function getCarts(include) {
   return request({
-    rul: 'api/carts',
-    method: 'GET'
+    url: 'api/carts',
+    method: 'GET',
+    params: {
+      include,
+    }
   });
 }
 
@@ -32,17 +35,19 @@ export function modifyCart(cartId, num) {
 // 移出购物车
 export function deleteCart(cartId) {
   return request({
-    rul: `api/carts/${cartId}`,
+    url: `api/carts/${cartId}`,
     method: 'DELETE',
   });
 }
 
 // 购物车改变选中
-export function checkedCart(data) {
+export function checkedCart(cartIds) {
   return request({
     url: 'api/carts/checked',
     method: 'PATCH',
-    data,
+    data: {
+      cart_ids: cartIds,
+    }
   });
 }
 
