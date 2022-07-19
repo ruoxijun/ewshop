@@ -23,6 +23,9 @@ import {
   Image as VanImage,
   Button,
   Form, Field, CellGroup,
+  SubmitBar,
+  Checkbox, CheckboxGroup,
+  Stepper,
   } from 'vant';
 
 createApp(App)
@@ -58,5 +61,12 @@ createApp(App)
 .use(Form)
 .use(Field)
 .use(CellGroup)
+// 使用 Vant 提交订单栏
+.use(SubmitBar)
+// 使用 Vant 复选框
+.use(Checkbox)
+.use(CheckboxGroup)
+// 使用 Vant 步进器
+.use(Stepper)
 
 .mount('#app');
