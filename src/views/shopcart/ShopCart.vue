@@ -35,7 +35,7 @@
             </van-card>
           </div>
           <template #right>
-            <van-button square text="删除" type="danger" class="delete-button" />
+            <van-button @click="deleteGood(cart.id)" square text="删除" type="danger" class="delete-button" />
           </template>
         </van-swipe-cell>
       </van-checkbox-group>
@@ -52,7 +52,7 @@
     </div>
 
     <div class="carts-submit-bar">
-      <van-submit-bar :price="3050" button-text="提交订单" @submit="onSubmit">
+      <van-submit-bar :price="allPrice * 100" button-text="提交订单" @submit="onSubmit">
         <van-checkbox @click="clickCheckAll" v-model="checkedAll">全选</van-checkbox>
       </van-submit-bar>
     </div>
@@ -63,15 +63,18 @@
 <script>
 import NavBar from "@components/common/navbar/NavBar";
 
-import { nextTick, reactive, ref, toRefs, onMounted } from 'vue';
-import { getCarts, modifyCart, checkedCart } from '@network/cart';
+import { getCarts, modifyCart, checkedCart, deleteCart } from '@network/cart';
 import { Toast } from 'vant';
 
 import detail from '@mixins/detail';
+import { useRouter } from 'vue-router';
+import { nextTick, reactive, ref, toRefs, onMounted, computed } from 'vue';
 
 export default {
 
   setup() {
+    
+    const router = useRouter();
 
     // 到商品详情页面
     const { toDetail } = detail();
@@ -90,6 +93,7 @@ export default {
       getCarts("goods").then(res=> {
         console.log(res.data);
         carts.list = res.data;
+        // 购物车多选框
         carts.result = res.data.filter(c=> c.is_checked === 1 ).map(c=> c.id);
         checkedAll.value = carts.list.length===carts.result.length;
 
@@ -129,18 +133,51 @@ export default {
       checkedCart(carts.result).then(res=> {
         if(res.status == 204){
           checkedAll.value = carts.list.length===carts.result.length;
+          
+          // 同步购物车列表 is_checked 值
+          carts.list.forEach(c=>{
+            if(result.indexOf(c.id) != -1) {
+              c.is_checked = 1; // 选中
+              return;
+            }
+            c.is_checked = 0;
+          });
           Toast.clear();
         }
       });
     }
+    
     // 是否全选
     const checkedAll = ref(false);
     const checkboxGroup = ref(null);
     const clickCheckAll = e=> {
       checkboxGroup.value.toggleAll(checkedAll.value);
     }
+    
+    // 删除购物车
+    const deleteGood = id=> {
+      deleteCart(id).then(res=> {
+        init();
+      });
+    }
+    
+    // 总价
+    const allPrice = computed(()=> {
+      if(carts.list.length) {
+        return carts.list.filter(cart=> cart.is_checked===1)
+          .reduce((previousValue, c)=>  previousValue + (c.num * c.goods.price), 0);
+      }
+      return 0;
+    });
+    
     // 提交订单
-    const onSubmit = ()=> {};
+    const onSubmit = ()=> {
+      if(carts.result.length < 1) {
+        Toast.fail("请选择要结算的商品");
+        return;
+      }
+      router.push('/profile');
+    };
 
     return {
       toDetail,
@@ -150,6 +187,8 @@ export default {
       checkedAll,
       checkboxGroup,
       clickCheckAll,
+      deleteGood,
+      allPrice,
       onSubmit,
     }
   },
