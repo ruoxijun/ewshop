@@ -22,3 +22,10 @@ export function logout() {
     method: 'POST',
   });
 }
+
+export function getUser() {
+  return request({
+    url: '/api/user',
+    method: 'GET',
+  });
+}

@@ -28,6 +28,7 @@ import {
   Stepper,
   SwipeCell,
   Empty,
+  Cell,
   } from 'vant';
 
 createApp(App)
@@ -74,5 +75,7 @@ createApp(App)
 .use(SwipeCell)
 // 使用 Vant 空状态
 .use(Empty)
+// 使用 Vant 单元格
+.use(Cell)
 
 .mount('#app');
