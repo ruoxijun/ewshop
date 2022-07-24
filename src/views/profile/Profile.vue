@@ -25,13 +25,18 @@
     </div>
     
     <div class="versatility">
-      <van-cell title="路由跳转" is-link to="index" />
+      <van-cell title="我的收藏" is-link to="/collect" icon="like-o" />
+      <van-cell title="我的订单" is-link to="/order" icon="balance-list-o" />
+      <van-cell title="账号管理" is-link to="/setuser" icon="contact" />
+      <van-cell title="地址管理" is-link to="/address" icon="location-o" />
+      <van-cell title="关于我们" is-link to="/about" icon="info-o" />
     </div>
 
-    
-    <van-button class="logout" @click="clickLogout" round type="warning" block>
-      退出登录
-    </van-button>
+    <div class="logout-div">
+      <van-button class="logout" @click="clickLogout" round type="success" block>
+        退出登录
+      </van-button>
+    </div>
   </div>
 </div>
 </template>
@@ -101,6 +106,7 @@ export default {
   .content {
     height: 100%;
     background-color: #f1f1f1;
+    text-align: left;
     
     .header {
       padding: 16px 16px 8px;
@@ -110,6 +116,7 @@ export default {
       .avatar {
         border-radius: 4px;
         margin-right: 8px;
+        overflow: hidden;
       }
       
       .user-msg {
@@ -132,11 +139,31 @@ export default {
     
     .versatility {
       margin-top: 8px;
+
+      .van-cell {
+        padding: 12px;
+        font-size: 16px;
+
+        --van-padding-base: 8px;
+      }
+
+      .van-cell:nth-child(2) {
+        margin-top: 8px;
+      }
+      .van-cell:last-child {
+        margin-top: 8px;
+      }
+
     }
 
-    .logout {
-      margin-top: 10px;
+    .logout-div {
+      padding: 0 16px;
+
+      .logout {
+        margin-top: 10px;
+      }
     }
+
   }
 
 }

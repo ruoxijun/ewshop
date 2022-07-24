@@ -29,6 +29,7 @@ import {
   SwipeCell,
   Empty,
   Cell,
+  AddressList,AddressEdit,
   } from 'vant';
 
 createApp(App)
@@ -77,5 +78,7 @@ createApp(App)
 .use(Empty)
 // 使用 Vant 单元格
 .use(Cell)
+// 使用 Vant 地址列表/地址编辑
+.use(AddressList).use(AddressEdit)
 
 .mount('#app');

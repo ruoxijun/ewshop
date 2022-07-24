@@ -10,6 +10,9 @@ const Profile = () => import('@views/profile/Profile.vue'); // 个人中心
 const ShopCart = () => import('@views/shopcart/ShopCart.vue'); // 购物车
 const Login = () => import('@views/auth/Login.vue'); // 登录
 const Register = () => import('@views/auth/Register.vue'); // 注册
+const Address = () => import('@/views/address/Address'); // 地址管理
+const AddressEdit = () => import('@/views/address/AddressEdit'); // 新增/编辑地址
+const NotFound = () => import('@views/404/404');
 
 const routes = [
   {
@@ -70,6 +73,31 @@ const routes = [
       title: "个人中心",
       isAuthRequired: true, // 需要检查是否已登录
     },
+  },
+  {
+    path: '/address',
+    name: 'Address',
+    component: Address,
+    meta: {
+      title: "地址管理",
+      isAuthRequired: true,
+    }
+  },
+  {
+    path: '/addressedit',
+    name: 'AddressEdit',
+    component: AddressEdit,
+    meta: {
+      isAuthRequired: true,
+    }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
+    meta: {
+      title: "404",
+    }
   },
 ]
 
